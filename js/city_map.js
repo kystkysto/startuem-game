@@ -19,6 +19,19 @@
     { wall: '#a89b80', roof: '#524b3f', trim: '#d6c8a8' }  // Neoclassical cream
   ];
 
+  var SIGN_LABELS = [
+    'ШАВЕРМА 24',
+    'ПРОДУКТЫ',
+    'АПТЕКА',
+    'НЕВСКИЙ',
+    'КУПЧИНО',
+    'М-10 → МОСКВА',
+    'ПИТЕР • СПб',
+    'БУЛОЧНАЯ',
+    'ГАРАЖ № 24',
+    '24 ЧАСА'
+  ];
+
   // Deterministic PRNG so the St. Petersburg layout stays identical across runs
   function makeRng(seed) {
     var s = seed >>> 0;
@@ -46,6 +59,8 @@
     this.canalBlocks = [];
     this.busStops = [];
     this.puddles = [];
+    this.trees = [];
+    this.crosswalks = [];
 
     this._generate();
   }
@@ -154,6 +169,37 @@
         rot: rng() * Math.PI
       });
     }
+
+    // Intersection crosswalk anchors & sidewalk trees
+    for (var iy = 0; iy < ROAD_CENTERS.length; iy++) {
+      for (var ix = 0; ix < ROAD_CENTERS.length; ix++) {
+        this.crosswalks.push({ x: ROAD_CENTERS[ix], y: ROAD_CENTERS[iy] });
+      }
+    }
+
+    // Trees along Griboedov Canal embankments & Moscow Plaza corners
+    for (var tx = 110; tx < WORLD_SIZE - 80; tx += 150) {
+      var nearRoad = false;
+      for (var rc = 0; rc < ROAD_CENTERS.length; rc++) {
+        if (Math.abs(tx - ROAD_CENTERS[rc]) < ROAD_HALF + 28) {
+          nearRoad = true;
+          break;
+        }
+      }
+      if (!nearRoad) {
+        this.trees.push({ x: tx, y: CANAL_Y - CANAL_HALF - 11, r: 12 + (tx % 5) });
+        this.trees.push({ x: tx + 35, y: CANAL_Y + CANAL_HALF + 11, r: 12 + (tx % 4) });
+      }
+    }
+    var plazaTrees = [
+      { x: 1785, y: 1785, r: 16 },
+      { x: 2055, y: 1785, r: 16 },
+      { x: 1785, y: 2055, r: 16 },
+      { x: 2055, y: 2055, r: 16 }
+    ];
+    for (var pt = 0; pt < plazaTrees.length; pt++) {
+      this.trees.push(plazaTrees[pt]);
+    }
   };
 
   CityMap.prototype._addBuilding = function (x, y, w, h, rng) {
@@ -169,6 +215,8 @@
         rh: 10 + rng() * 16
       });
     }
+    var idx = this.buildings.length;
+    var signLabel = (idx % 4 === 1 && w >= 120) ? SIGN_LABELS[(idx >> 2) % SIGN_LABELS.length] : null;
     this.buildings.push({
       x: x,
       y: y,
@@ -179,6 +227,7 @@
       roofColor: style.roof,
       trimColor: style.trim,
       windowSeed: Math.floor(rng() * 10000),
+      signLabel: signLabel,
       vents: vents
     });
   };

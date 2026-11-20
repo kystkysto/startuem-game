@@ -371,12 +371,6 @@
     document.getElementById('btn-p1-skip').addEventListener('click', function () {
       self.startPhase2(Math.max(20, self.phase1.rubles));
     });
-    document.getElementById('btn-p1-back').addEventListener('click', function () {
-      self.phase1.stepWalk(-0.85);
-    });
-    document.getElementById('btn-p1-forward').addEventListener('click', function () {
-      self.phase1.stepWalk(0.85);
-    });
     document.getElementById('btn-p1-startuem').addEventListener('click', function () {
       self.phase1.triggerClimax();
     });

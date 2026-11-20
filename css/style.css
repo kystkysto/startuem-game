@@ -400,15 +400,184 @@ html, body {
   border-radius: 8px;
 }
 
-.p1-stage-center {
-  flex: 1;
+/* ==================== PHASE 1 FULLSCREEN FMV ==================== */
+.p1-fmv-layer {
+  padding: 0;
+}
+
+.p1-video-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #07090e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.p1-video-stage video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.25s ease;
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .p1-video-stage video {
+    object-fit: contain;
+  }
+}
+
+.p1-video-stage.glitch-mid video {
+  filter: contrast(1.12) saturate(1.45);
+  animation: vhs-jitter 0.28s steps(2, start) infinite;
+}
+
+.p1-video-stage.glitch-high video {
+  animation: lsd-video-trip 1.5s linear infinite, vhs-jitter 0.14s steps(2, start) infinite;
+}
+
+@keyframes vhs-jitter {
+  0% { transform: translate(0, 0) scale(1.01); }
+  50% { transform: translate(2px, -1px) scale(1.015); }
+  100% { transform: translate(-2px, 1px) scale(1.01); }
+}
+
+@keyframes lsd-video-trip {
+  0% { filter: hue-rotate(0deg) saturate(1.9) contrast(1.18); }
+  50% { filter: hue-rotate(180deg) saturate(2.2) contrast(1.22); }
+  100% { filter: hue-rotate(360deg) saturate(1.9) contrast(1.18); }
+}
+
+.p1-scrim-top {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 170px;
+  background: linear-gradient(to bottom, rgba(6, 8, 14, 0.85), rgba(6, 8, 14, 0));
+}
+
+.p1-scrim-bottom {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 190px;
+  background: linear-gradient(to top, rgba(6, 8, 14, 0.92), rgba(6, 8, 14, 0));
+}
+
+.p1-hud-chrome {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.p1-top-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.p1-topbar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.p1-prompt-banner {
+  width: min(560px, 94vw);
+  background: rgba(255, 250, 232, 0.96);
+  color: #111622;
+  border: 3px solid var(--amber);
+  border-radius: 12px;
+  padding: 9px 14px 11px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+
+.p1-prompt-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.p1-prompt-speaker {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 900;
+  color: #8c1420;
+  letter-spacing: 0.04em;
+}
+
+.p1-prompt-hint {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #4b5563;
+}
+
+.p1-prompt-text {
+  font-size: clamp(0.98rem, 2.2vw, 1.15rem);
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 7px;
+}
+
+.p1-prompt-timer {
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+}
+
+.p1-prompt-timer-fill {
+  height: 100%;
+  background: var(--crimson);
+  transition: width 0.08s linear;
+}
+
+.p1-center-stack {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding-top: 76px;
-  pointer-events: none;
+  gap: 12px;
+  margin: auto 0;
+}
+
+.p1-feedback-toast {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3.6vw, 2.1rem);
+  color: var(--emerald);
+  text-shadow: 2px 2px 0 #000, 0 0 18px rgba(57, 255, 20, 0.55);
+  background: rgba(10, 14, 22, 0.78);
+  border: 2px solid var(--emerald);
+  border-radius: 12px;
+  padding: 6px 18px;
+}
+
+.p1-quote-strip {
+  align-self: center;
+  background: rgba(10, 14, 22, 0.9);
+  border: 2px solid var(--amber);
+  border-radius: 10px;
+  padding: 7px 16px;
+  font-family: var(--font-ui);
+  font-size: clamp(0.92rem, 2.2vw, 1.08rem);
+  font-weight: 800;
+  color: var(--amber);
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
 .video-monitor {
@@ -442,11 +611,6 @@ html, body {
   font-size: 0.68rem;
   font-weight: 800;
   color: #fff;
-}
-
-.p1-monitor {
-  width: min(360px, 82vw);
-  aspect-ratio: 16 / 9;
 }
 
 .p2-pip {
@@ -1036,12 +1200,8 @@ html, body {
     padding: 5px 8px;
   }
 
-  .p1-stage-center {
-    padding-top: 54px;
-  }
-
-  .p1-monitor {
-    width: min(270px, 82vw);
+  .p1-hud-chrome {
+    padding: 8px;
   }
 
   .p2-pip {

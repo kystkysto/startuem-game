@@ -25,6 +25,14 @@
       btnTrip: document.getElementById('btn-p2-trip')
     };
 
+    this.nataliaImgReady = false;
+    this.nataliaImg = new global.Image();
+    var self = this;
+    this.nataliaImg.onload = function () {
+      self.nataliaImgReady = true;
+    };
+    this.nataliaImg.src = './video/clips/poster.jpg';
+
     this.reset(15);
   }
 
@@ -64,7 +72,7 @@
     this.comboTimer = 0;
 
     this.shockCooldown = 0;
-    this.tripCharge = 25;
+    this.tripCharge = 40;
     this.tripTimer = 0;
     this.tripsCount = 0;
     this.bustedProgress = 0;
@@ -1066,6 +1074,32 @@
     ctx.stroke();
     ctx.setLineDash([]);
 
+    // Zebra crosswalks & warm streetlamp corner pools at intersections
+    var cwList = this.map.crosswalks;
+    for (i = 0; i < cwList.length; i++) {
+      var cw = cwList[i];
+      if (Math.abs(cw.x - camX) > vw + 120 || Math.abs(cw.y - camY) > vh + 120) continue;
+
+      ctx.fillStyle = 'rgba(232, 238, 248, 0.22)';
+      for (var st = -rh + 12; st <= rh - 18; st += 16) {
+        // Horizontal arms (left & right of intersection)
+        ctx.fillRect(cw.x - rh - 24, cw.y + st, 20, 8);
+        ctx.fillRect(cw.x + rh + 4, cw.y + st, 20, 8);
+        // Vertical arms (top & bottom of intersection)
+        ctx.fillRect(cw.x + st, cw.y - rh - 24, 8, 20);
+        ctx.fillRect(cw.x + st, cw.y + rh + 4, 8, 20);
+      }
+
+      // Corner streetlamp amber glow pools
+      ctx.fillStyle = 'rgba(255, 195, 80, 0.11)';
+      var corners = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+      for (var cr = 0; cr < corners.length; cr++) {
+        ctx.beginPath();
+        ctx.arc(cw.x + corners[cr][0] * (rh + 10), cw.y + corners[cr][1] * (rh + 10), 42, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
     // Griboedov Canal & bridges at vertical avenues
     var cy = this.map.canalY;
     var ch = this.map.canalHalf;
@@ -1149,6 +1183,25 @@
     ctx.textAlign = 'center';
     ctx.fillText('МОСКВА • МОЙ ДЖИП', 0, -pad.radius - 10);
     ctx.restore();
+
+    // Courtyard & canal embankment trees
+    var trees = this.map.trees;
+    for (var tr = 0; tr < trees.length; tr++) {
+      var tree = trees[tr];
+      if (Math.abs(tree.x - camX) > vw || Math.abs(tree.y - camY) > vh) continue;
+      ctx.fillStyle = 'rgba(0,0,0,0.38)';
+      ctx.beginPath();
+      ctx.arc(tree.x + 4, tree.y + 5, tree.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#234a2e';
+      ctx.beginPath();
+      ctx.arc(tree.x, tree.y, tree.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#336b42';
+      ctx.beginPath();
+      ctx.arc(tree.x - 2, tree.y - 2, tree.r * 0.68, 0, Math.PI * 2);
+      ctx.fill();
+    }
   };
 
   Phase2GTA.prototype._drawSkidmarks = function (ctx) {
@@ -1350,6 +1403,13 @@
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(-len * 0.5 + 5, -wid * 0.5 + 6, len, wid);
 
+    // Wheel arches
+    ctx.fillStyle = '#11151d';
+    ctx.fillRect(-len * 0.34, -wid * 0.5 - 2, 12, 2);
+    ctx.fillRect(len * 0.14, -wid * 0.5 - 2, 12, 2);
+    ctx.fillRect(-len * 0.34, wid * 0.5, 12, 2);
+    ctx.fillRect(len * 0.14, wid * 0.5, 12, 2);
+
     // LiAZ Blue & White body
     ctx.fillStyle = tintOverride || '#e8eef5';
     ctx.fillRect(-len * 0.5, -wid * 0.5, len, wid);
@@ -1357,10 +1417,17 @@
     ctx.fillRect(-len * 0.48, -wid * 0.5, len * 0.96, 4);
     ctx.fillRect(-len * 0.48, wid * 0.5 - 4, len * 0.96, 4);
 
-    // Roof hatches
+    // Roof hatches & № 24 roof badge
     ctx.fillStyle = '#c2cdd9';
-    ctx.fillRect(-14, -6, 12, 12);
-    ctx.fillRect(6, -6, 12, 12);
+    ctx.fillRect(-16, -6, 12, 12);
+    ctx.fillRect(4, -6, 12, 12);
+    if (!tintOverride) {
+      ctx.fillStyle = '#0d223f';
+      ctx.font = 'bold 9px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('24', -10, 0);
+    }
 
     // Front panoramic windshield
     ctx.fillStyle = '#101d2e';
@@ -1456,37 +1523,101 @@
       var rx1 = x1 + (x1 - camX) * z;
       var ry1 = y1 + (y1 - camY) * z;
 
-      // Draw visible side walls facing the camera
+      // Draw visible side walls facing the camera + lit apartment windows
       ctx.fillStyle = bld.wallColor;
       if (camY < y0) {
         this._drawQuad(ctx, x0, y0, x1, y0, rx1, ry0, rx0, ry0);
+        this._drawWallWindows(ctx, x0, y0, x1, y0, rx0, ry0, rx1, ry0, bld.w, bld.windowSeed + 1);
       }
       if (camY > y1) {
         this._drawQuad(ctx, x0, y1, x1, y1, rx1, ry1, rx0, ry1);
+        this._drawWallWindows(ctx, x0, y1, x1, y1, rx0, ry1, rx1, ry1, bld.w, bld.windowSeed + 2);
       }
 
       ctx.fillStyle = bld.trimColor;
       if (camX < x0) {
         this._drawQuad(ctx, x0, y0, x0, y1, rx0, ry1, rx0, ry0);
+        this._drawWallWindows(ctx, x0, y0, x0, y1, rx0, ry0, rx0, ry1, bld.h, bld.windowSeed + 3);
       }
       if (camX > x1) {
         this._drawQuad(ctx, x1, y0, x1, y1, rx1, ry1, rx1, ry0);
+        this._drawWallWindows(ctx, x1, y0, x1, y1, rx1, ry0, rx1, ry1, bld.h, bld.windowSeed + 4);
       }
 
-      // Roof surface
+      // Roof surface + parapet rim
       ctx.fillStyle = bld.roofColor;
       ctx.fillRect(rx0, ry0, rx1 - rx0, ry1 - ry0);
-      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+      ctx.strokeStyle = 'rgba(0,0,0,0.48)';
       ctx.lineWidth = 2;
       ctx.strokeRect(rx0, ry0, rx1 - rx0, ry1 - ry0);
 
-      // Rooftop vents / skylights
       var rw = rx1 - rx0;
       var rh = ry1 - ry0;
-      ctx.fillStyle = 'rgba(255,255,255,0.1)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1;
+      if (rw > 24 && rh > 24) {
+        ctx.strokeRect(rx0 + 6, ry0 + 6, rw - 12, rh - 12);
+      }
+
+      // Rooftop vents / skylights
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
       for (var k = 0; k < bld.vents.length; k++) {
         var vt = bld.vents[k];
         ctx.fillRect(rx0 + rw * vt.rx, ry0 + rh * vt.ry, vt.rw, vt.rh);
+      }
+
+      // Retro Russian rooftop shop signs
+      if (bld.signLabel && rw > 90) {
+        var sw = Math.min(rw - 16, 118);
+        var sh = 18;
+        var sx = rx0 + rw * 0.5 - sw * 0.5;
+        var sy = ry0 + rh * 0.5 - sh * 0.5;
+        ctx.fillStyle = 'rgba(12, 16, 26, 0.86)';
+        ctx.fillRect(sx, sy, sw, sh);
+        ctx.strokeStyle = '#f5b800';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(sx, sy, sw, sh);
+        ctx.fillStyle = '#ffd54f';
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(bld.signLabel, sx + sw * 0.5, sy + sh * 0.5 + 1, sw - 8);
+      }
+    }
+  };
+
+  Phase2GTA.prototype._drawWallWindows = function (ctx, bx0, by0, bx1, by1, rx0, ry0, rx1, ry1, spanPx, seed) {
+    var cols = Math.max(2, Math.min(8, Math.floor(spanPx / 34)));
+    var rows = 2;
+    for (var r = 0; r < rows; r++) {
+      var v0 = 0.20 + r * 0.36;
+      var v1 = v0 + 0.22;
+      for (var c = 0; c < cols; c++) {
+        var u0 = (c + 0.22) / cols;
+        var u1 = (c + 0.78) / cols;
+
+        // Deterministic lit vs dark window hash
+        var h = ((seed * 31 + r * 17 + c * 53) & 15);
+        if (h < 5) ctx.fillStyle = 'rgba(255, 214, 102, 0.82)'; // warm lit flat
+        else if (h === 6 || h === 7) ctx.fillStyle = 'rgba(92, 214, 255, 0.55)'; // TV glow
+        else ctx.fillStyle = 'rgba(14, 20, 30, 0.65)'; // dark window
+
+        var p00x = bx0 + (bx1 - bx0) * u0;
+        var p00y = by0 + (by1 - by0) * u0;
+        var p10x = bx0 + (bx1 - bx0) * u1;
+        var p10y = by0 + (by1 - by0) * u1;
+        var q00x = rx0 + (rx1 - rx0) * u0;
+        var q00y = ry0 + (ry1 - ry0) * u0;
+        var q10x = rx0 + (rx1 - rx0) * u1;
+        var q10y = ry0 + (ry1 - ry0) * u1;
+
+        ctx.beginPath();
+        ctx.moveTo(p00x + (q00x - p00x) * v0, p00y + (q00y - p00y) * v0);
+        ctx.lineTo(p10x + (q10x - p10x) * v0, p10y + (q10y - p10y) * v0);
+        ctx.lineTo(p10x + (q10x - p10x) * v1, p10y + (q10y - p10y) * v1);
+        ctx.lineTo(p00x + (q00x - p00x) * v1, p00y + (q00y - p00y) * v1);
+        ctx.closePath();
+        ctx.fill();
       }
     }
   };
@@ -1607,12 +1738,25 @@
       ctx.globalAlpha = 0.42;
 
       if (hal.kind === 'jeep') {
-        this._drawJeepSprite(ctx, 0, 0, this.time * 2, 0.45, '#00e5ff');
+        this._drawJeepSprite(ctx, 0, 0, this.time * 2, 0.55, '#00e5ff');
       } else if (hal.kind === 'beret') {
-        ctx.fillStyle = '#39ff14';
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 26, 17, -0.2, 0, Math.PI * 2);
-        ctx.fill();
+        if (this.nataliaImgReady) {
+          ctx.globalAlpha = 0.68;
+          ctx.beginPath();
+          ctx.arc(0, 0, 30, 0, Math.PI * 2);
+          ctx.save();
+          ctx.clip();
+          ctx.drawImage(this.nataliaImg, -36, -30, 72, 60);
+          ctx.restore();
+          ctx.strokeStyle = i % 2 === 0 ? '#e040fb' : '#00e5ff';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = '#e040fb';
+          ctx.font = '900 22px Impact, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('МОРСКАЯ ПЕХОТА!', 0, 0);
+        }
       } else if (hal.kind === 'ruble') {
         ctx.fillStyle = '#ffd54f';
         ctx.font = '900 42px Impact, sans-serif';
