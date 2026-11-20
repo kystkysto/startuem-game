@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0c1017">
+  <title>Я СКАЗАЛА — СТАРТУЕМ! • 2013</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <div id="game-root">
+    <canvas id="game-canvas"></canvas>
+    <div id="crt-overlay" aria-hidden="true"></div>
+
+    <!-- ==================== TITLE SCREEN ==================== -->
+    <section id="screen-title" class="overlay-screen active">
+      <div class="title-card">
+        <div class="badge-row">
+          <span class="badge-pill badge-rec">● REC 2013</span>
+          <span class="badge-pill badge-city">КУЛЬТУРНАЯ СТОЛИЦА • СПб</span>
+        </div>
+
+        <h1 class="game-logo">
+          <span class="logo-small">НАТАЛЬЯ «МОРСКАЯ ПЕХОТА»</span>
+          <span class="logo-main">Я СКАЗАЛА — СТАРТУЕМ!</span>
+        </h1>
+
+        <p class="game-subtitle">
+          Питерский автобус № 24 → Мини-GTA 2 → Джип в Москве
+        </p>
+
+        <div class="title-actions">
+          <button id="btn-start-full" class="btn btn-primary btn-xl" type="button">
+            ▶ СТАРТУЕМ! <span class="btn-sub">Автобус → Мини-GTA 2</span>
+          </button>
+          <button id="btn-start-gta" class="btn btn-secondary" type="button">
+            🚌 СРАЗУ ЗА РУЛЬ <span class="btn-sub">Мини-GTA 2 по Питеру</span>
+          </button>
+        </div>
+
+        <div class="title-tools-row">
+          <button id="btn-open-voice" class="btn btn-ghost" type="button">
+            🎙 Своя озвучка (MP3)
+          </button>
+          <button id="btn-title-sound" class="btn btn-ghost" type="button">
+            🔊 Звук: ВКЛ
+          </button>
+          <button id="btn-title-voice" class="btn btn-ghost" type="button">
+            🗣 Голос: ВКЛ
+          </button>
+        </div>
+
+        <div class="title-footer">
+          <div class="controls-hint">
+            <span><b>ПК:</b> WASD / Стрелки — руль и шаг • <b>SPACE</b> — Стартуем • <b>E</b> — Приход • <b>SHIFT</b> — Дрифт • <b>1–4</b> — Фразы</span>
+            <span><b>Телефон:</b> джойстик + кнопки на экране</span>
+          </div>
+          <div class="best-score-badge">
+            РЕКОРД: <strong id="title-best-score">0</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PHASE 1 HUD (BUS 2013) ==================== -->
+    <section id="hud-phase1" class="hud-layer hidden">
+      <div class="p1-topbar">
+        <div class="camcorder-tag">
+          <span class="rec-dot">●</span>
+          <span>REC 2013-04-17</span>
+          <span class="sep">|</span>
+          <span>СПб • АВТОБУС № 24</span>
+          <span class="sep">|</span>
+          <span id="p1-zone-label" class="zone-pill">САЛОН</span>
+        </div>
+
+        <div class="p1-meters">
+          <div class="meter-block">
+            <span class="meter-label">НАПОР</span>
+            <div class="progress-track">
+              <div id="p1-authority-fill" class="progress-fill authority-fill" style="width: 0%;"></div>
+            </div>
+            <span id="p1-authority-pct" class="meter-val">0%</span>
+          </div>
+
+          <div class="ruble-pill">
+            <span id="p1-rubles">0</span> ₽
+          </div>
+
+          <button id="btn-p1-skip" class="btn btn-mini" type="button" title="Перейти сразу к угону автобуса">
+            К рулю →
+          </button>
+        </div>
+      </div>
+
+      <div class="p1-stage-center">
+        <div id="p1-video-frame" class="video-monitor p1-monitor">
+          <div class="monitor-chrome">
+            <span class="rec-dot">●</span>
+            <span>LIVE 3GP • САЛОН</span>
+          </div>
+          <video id="p1-video" muted playsinline preload="auto" poster="./video/clips/poster.jpg"></video>
+        </div>
+
+        <div id="p1-climax-wrap" class="p1-climax-wrap hidden">
+          <button id="btn-p1-startuem" class="btn btn-startuem-mega" type="button">
+            🔥 Я СКАЗАЛА — СТАРТУЕМ! 🔥
+            <span class="btn-hint-key">[SPACE] ВЫКИНУТЬ ВОДИТЕЛЯ</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="p1-bottom-deck">
+        <div class="p1-walk-bar">
+          <button id="btn-p1-back" class="btn btn-walk" type="button">◀ В САЛОН [A/S]</button>
+          <div id="p1-walk-status" class="walk-status">ПОЗИЦИЯ: САЛОН (1/3)</div>
+          <button id="btn-p1-forward" class="btn btn-walk" type="button">К ВОДИТЕЛЮ ▶ [W/D]</button>
+        </div>
+
+        <div id="p1-phrase-grid" class="p1-phrase-grid">
+          <button class="btn btn-phrase" data-action="cultural" type="button">
+            <span class="key-cap">1</span>
+            <span class="phrase-text">В ДРУГОМ КУЛЬТУРНОМ ГОРОДЕ!</span>
+          </button>
+          <button class="btn btn-phrase" data-action="ruble" type="button">
+            <span class="key-cap">2</span>
+            <span class="phrase-text">ПО РУБЛЮ НА ДОРОГУ!</span>
+          </button>
+          <button class="btn btn-phrase" data-action="wheel" type="button">
+            <span class="key-cap">3</span>
+            <span class="phrase-text">СЯДУ ЗА РУЛЬ — ВЫЛЕТИШЬ!</span>
+          </button>
+          <button class="btn btn-phrase" data-action="breathe" type="button">
+            <span class="key-cap">4</span>
+            <span class="phrase-text">ПОСИДИ, ДРУЖОК! / ВДОХ-ВЫДОХ!</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PHASE 2 HUD (MINI-GTA 2) ==================== -->
+    <section id="hud-phase2" class="hud-layer hidden">
+      <div class="p2-top-row">
+        <div class="p2-left-col">
+          <div class="minimap-spacer" aria-hidden="true"></div>
+          <div class="district-card">
+            <div id="p2-district" class="district-name">НЕВСКИЙ ПРОСПЕКТ</div>
+            <div id="p2-mission" class="mission-ticker">МИССИЯ: Набери 60 ₽ на дорогу!</div>
+          </div>
+          <div id="p2-video-pip" class="video-monitor p2-pip">
+            <div class="monitor-chrome">
+              <span class="rec-dot">●</span>
+              <span>3GP ЭФИР</span>
+            </div>
+            <video id="p2-video" muted playsinline preload="auto" poster="./video/clips/poster.jpg"></video>
+          </div>
+        </div>
+
+        <div class="p2-right-col">
+          <div class="p2-quick-audio">
+            <button id="btn-p2-voice-modal" class="btn-icon" type="button" title="Своя озвучка MP3">🎙</button>
+            <button id="btn-p2-mute" class="btn-icon" type="button" title="Звук [M]">🔊</button>
+            <button id="btn-p2-voice" class="btn-icon" type="button" title="Голос">🗣</button>
+          </div>
+
+          <div class="gta-stats-panel">
+            <div class="stars-row" id="p2-stars" aria-label="Уровень розыска">
+              <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+            </div>
+
+            <div class="score-row">
+              <span class="stat-pill stat-rubles"><strong id="p2-rubles">0</strong> ₽</span>
+              <span class="stat-pill stat-score">ОЧКИ <strong id="p2-score">0</strong></span>
+              <span class="stat-pill stat-combo" id="p2-combo">×1</span>
+            </div>
+
+            <div class="vehicle-row">
+              <span id="p2-vehicle-badge" class="vehicle-badge">🚌 АВТОБУС № 24</span>
+            </div>
+
+            <div class="bars-stack">
+              <div class="hud-bar-row">
+                <span class="bar-tag">БРОНЯ</span>
+                <div class="progress-track">
+                  <div id="p2-hp-fill" class="progress-fill hp-fill" style="width: 100%;"></div>
+                </div>
+                <span id="p2-hp-val" class="bar-num">100</span>
+              </div>
+              <div class="hud-bar-row">
+                <span class="bar-tag">🌀 ПРИХОД</span>
+                <div class="progress-track">
+                  <div id="p2-trip-fill" class="progress-fill trip-fill" style="width: 0%;"></div>
+                </div>
+                <span id="p2-trip-val" class="bar-num">0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="p2-subtitle" class="p2-subtitle hidden">«Я СКАЗАЛА — СТАРТУЕМ!»</div>
+
+      <div class="p2-controls-deck">
+        <div id="touch-joystick-zone" class="touch-joystick-zone">
+          <div id="joystick-base" class="joystick-base">
+            <div id="joystick-knob" class="joystick-knob"></div>
+          </div>
+        </div>
+
+        <div class="p2-action-buttons">
+          <button id="btn-p2-drift" class="btn btn-act btn-drift" type="button">
+            ДРИФТ
+            <span class="key-sub">SHIFT</span>
+          </button>
+          <button id="btn-p2-trip" class="btn btn-act btn-trip" type="button">
+            🌀 ПРИХОД
+            <span class="key-sub">E</span>
+          </button>
+          <button id="btn-p2-startuem" class="btn btn-act btn-shock" type="button">
+            🔥 СТАРТУЕМ!
+            <span class="key-sub">SPACE</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VOICE MP3 MODAL ==================== -->
+    <div id="modal-voice" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="voice-modal-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="voice-modal-title">🎙 Своя озвучка (MP3 / WAV / OGG)</h2>
+          <button id="btn-close-voice" class="btn btn-mini" type="button">✕ Закрыть</button>
+        </div>
+
+        <p class="modal-desc">
+          Оригинальные нарезки голоса и видео из легендарного ролика 2013 года уже вшиты в игру!
+          При желании можете загрузить свои дополнительные MP3-файлы — они заменят нужные слоты по имени или по порядку:
+        </p>
+
+        <label class="upload-dropzone" for="voice-file-input">
+          <input id="voice-file-input" type="file" accept="audio/*" multiple>
+          <span>📂 Выбрать MP3 / WAV файлы с компьютера или телефона</span>
+        </label>
+
+        <div id="voice-slot-list" class="voice-slot-list"></div>
+      </div>
+    </div>
+
+    <!-- ==================== GAME OVER OVERLAY ==================== -->
+    <section id="screen-gameover" class="overlay-screen hidden">
+      <div class="gameover-card">
+        <div id="go-stamp" class="go-stamp">ПОСИДИ, ДРУЖОК</div>
+        <h2 id="go-subtitle" class="go-subtitle">ДО ПОРЫ ДО ВРЕМЕНИ…</h2>
+
+        <div id="go-rank" class="go-rank">РАНГИ: ГРОЗА 24-ГО МАРШРУТА</div>
+
+        <div class="go-stats-grid">
+          <div class="go-stat">
+            <span class="go-stat-lbl">СЧЁТ</span>
+            <strong id="go-score">0</strong>
+          </div>
+          <div class="go-stat">
+            <span class="go-stat-lbl">РЕКОРД</span>
+            <strong id="go-best">0</strong>
+          </div>
+          <div class="go-stat">
+            <span class="go-stat-lbl">РУБЛЕЙ</span>
+            <strong id="go-rubles">0 ₽</strong>
+          </div>
+          <div class="go-stat">
+            <span class="go-stat-lbl">МАКС. РОЗЫСК</span>
+            <strong id="go-stars">★</strong>
+          </div>
+          <div class="go-stat">
+            <span class="go-stat-lbl">ПРИХОДОВ</span>
+            <strong id="go-trips">0</strong>
+          </div>
+          <div class="go-stat">
+            <span class="go-stat-lbl">ТРАНСПОРТ</span>
+            <strong id="go-vehicle">АВТОБУС № 24</strong>
+          </div>
+        </div>
+
+        <div class="go-actions">
+          <button id="btn-share-chat" class="btn btn-primary btn-xl" type="button">
+            📋 СКОПИРОВАТЬ ДЛЯ ЧАТА ПАЦАНОВ
+          </button>
+          <div class="go-actions-row">
+            <button id="btn-retry-gta" class="btn btn-secondary" type="button">
+              ↻ ЕЩЁ РАЗ (ЗА РУЛЬ)
+            </button>
+            <button id="btn-retry-bus" class="btn btn-ghost" type="button">
+              🚌 С САЛОНА АВТОБУСА
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="./js/quotes.js"></script>
+  <script src="./js/audio.js"></script>
+  <script src="./js/city_map.js"></script>
+  <script src="./js/phase1_bus.js"></script>
+  <script src="./js/phase2_gta.js"></script>
+  <script src="./js/main.js"></script>
+</body>
+</html>
